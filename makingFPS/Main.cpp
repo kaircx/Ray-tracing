@@ -72,10 +72,12 @@ public:
 };
 
 Vec2 intersection(LimitLine a, LimitLine b) {
-	double t1 = (a.end_pos.y - a.begin_pos.y)/(a.end_pos.x - a.begin_pos.x);
-	double t2 = (b.end_pos.y - b.begin_pos.y) / (b.end_pos.x - b.begin_pos.x);
-	double x = (t1 * a.begin_pos.x - t2 * b.begin_pos.x - a.begin_pos.x + b.begin_pos.y) / (t1 - t2);
-	double y = t2 * (b.begin_pos.x - x) + b.begin_pos.y;
+	Vec2 v1 = a.v();
+	Vec2 v2 = b.v();
+	double t1 = v1.y / v1.x;
+	double t2 = v2.y / v2.x;
+	double x = (a.begin_pos.y + b.begin_pos.y + t1 * a.begin_pos.x - t2 * b.begin_pos.x) / (t1 - t2);
+	double y = a.begin_pos.y + t1*(x - a.begin_pos.x);
 	return {x,y};
 };
 
