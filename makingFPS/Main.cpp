@@ -66,30 +66,29 @@ public:
 			double theta = (pi - eye_range / 2) + i * (eye_range / eye_number);
 			limitlines.push_back(LimitLine(pos, theta, eye_length));
 		}
+
 	}
 
 };
 
 Vec2 intersection(LimitLine a, LimitLine b) {
-	double t1 = ;
-	double t2 = 
+	double t1 = (a.end_pos.y - a.begin_pos.y)/(a.end_pos.x - a.begin_pos.x);
+	double t2 = (b.end_pos.y - b.begin_pos.y) / (b.end_pos.x - b.begin_pos.x);
+	double x = (t1 * a.begin_pos.x - t2 * b.begin_pos.x - a.begin_pos.x + b.begin_pos.y) / (t1 - t2);
+	double y = t2 * (b.begin_pos.x - x) + b.begin_pos.y;
+	return {x,y};
 };
 
 
 void Main() {
 	Player Player({0,0});
-	LimitLine a({ 100,100 }, { 300, 400 });
-	LimitLine b({ 300,400 }, { 300,200 });
-	LimitLine c({ 300,200 }, { 100, 100 });
-
-
 	while (System::Update()) {
 		Eye eye(Player.pos, Player.pi);
 		LimitLine a({ 100,100 }, { 300, 400 });
-		LimitLine b({ 300,400 }, { 300,200 });
-		LimitLine c({ 300,200 }, { 100, 100 });
+		//LimitLine b({ 300,400 }, { 300,200 });
+		//LimitLine c({ 300,200 }, { 100, 100 });
 		Player.update();
 		Player.draw();
-
+		Circle(intersection(eye.limitlines[5],a), 5).draw(Palette::Orange);
 	}
 }
