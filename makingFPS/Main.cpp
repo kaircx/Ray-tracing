@@ -124,7 +124,7 @@ void drawFPSview(const std::vector<std::optional<Vec2>>& focus, const Player& Pl
 		}
 	}
 }
-
+　
 
 void Main() {
 	Window::SetStyle(WindowStyle::Sizable);
@@ -135,8 +135,6 @@ void Main() {
 
 	constexpr int width = 8;
 	constexpr int height = 8;
-	int map_width = Window::ClientSize().x / 4;
-	int map_height = Window::ClientSize().y;
 	int cell_size = 25;
 	int map[width][height] = { {1,1,1,1,1,1,1,1},
 								{1,0,1,0,0,0,0,1},
