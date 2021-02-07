@@ -10,8 +10,8 @@
 class Eye {
  public:
   static constexpr double eye_range = std::numbers::pi / 2;
-  static constexpr int eye_length = 150;
-  static constexpr int eye_number = 100;
+  static constexpr double eye_length = 300;
+  static constexpr int eye_number = 2000;
   std::vector<std::pair<Line, double>> lines;
   const Vec2& pos_;
   const double& theta_;
@@ -27,7 +27,8 @@ class Eye {
       const double phi =
           (theta_ - eye_range / 2) + i * (eye_range / eye_number);
       lines.emplace_back(
-          Line(pos_, eye_length * Vec2(std::cos(phi), std::sin(phi)) + pos_), std::abs(phi-theta_)  );
+          Line(pos_, eye_length * Vec2(std::cos(phi), std::sin(phi)) + pos_),
+          std::abs(phi - theta_));
     }
   }
 
@@ -44,7 +45,7 @@ class Player {
   double theta = 0;
   double vel = 0.5;
   Eye eye;
-  double turnvel = std::numbers::pi / 50;
+  double turnvel = std::numbers::pi / 100;
   Player(Vec2 p) : pos(p.x, p.y), eye(pos, theta) {}
   void update() {
     if (KeyUp.pressed()) {
@@ -70,6 +71,13 @@ class Player {
   }
 };
 
+class map {
+ public:
+  
+
+};
+
+
 std::vector<std::optional<Vec2>> makefocus(Player& Player,
                                            std::vector<Line>& walls) {
   std::vector<std::optional<Vec2>> focus;
@@ -94,17 +102,18 @@ std::vector<std::optional<Vec2>> makefocus(Player& Player,
       focus.push_back(*itr);
     }
   }
-    return focus;
+  return focus;
 }
 
-void drawFPSview(std::vector < std::optional<Vec2>> focus,Player& Player) {
+void drawFPSview(const std::vector<std::optional<Vec2>>& focus, const Player& Player) {
   for (int i = 0; i < Player.eye.lines.size(); i++) {
-    const auto window_width = Window::ClientSize().x;
-    const auto window_height = Window::ClientSize().y;
-    const auto tmp = ((window_width / 4) * 3 / Player.eye.lines.size()) * i;
+    const double window_width = Window::ClientSize().x;
+    const double window_height = Window::ClientSize().y;
+    const double tmp = ((window_width / 4) * 3 / Player.eye.lines.size()) * i;
 
     if (focus[i].has_value()) {
-      const auto dist = Geometry2D::Distance(Player.pos, focus[i].value())*std::cos(Player.eye.lines[i].second);
+      const auto dist = Geometry2D::Distance(Player.pos, focus[i].value()) *
+                        std::cos(Player.eye.lines[i].second);
       constexpr auto wall_height = 5000;
       Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
            window_width / 4 + tmp, window_height / 2 + wall_height / dist)
@@ -113,18 +122,19 @@ void drawFPSview(std::vector < std::optional<Vec2>> focus,Player& Player) {
   }
 }
 
-  void Main() {
-    Player Player({0, 0});
-    std::vector<Line> walls;
-    walls.push_back(Line(10, 10, 100, 100));
-    walls.push_back(Line(100, 100, 50, 500));
-    walls.push_back(Line(50, 500, 10, 10));
+void Main() {
+  Window::SetStyle(WindowStyle::Sizable);
+  Scene::SetScaleMode(ScaleMode::ResizeFill);
+  Player Player({0, 0});
+  std::vector<Line> walls;
+  walls.emplace_back(10, 10, 100, 100);
+  walls.emplace_back(100, 100, 50, 500);
+  walls.emplace_back(50, 500, 10, 10);
 
-    while (System::Update()) {
-      Player.update();
-      Player.draw();
-      auto focus = makefocus(Player,walls);
-      drawFPSview(focus,Player);
-
-    }
+  while (System::Update()) {
+    Player.update();
+    Player.draw();
+    auto focus = makefocus(Player, walls);
+    drawFPSview(focus, Player);
   }
+}
