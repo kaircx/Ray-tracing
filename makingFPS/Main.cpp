@@ -124,7 +124,6 @@ void drawFPSview(const std::vector<std::optional<Vec2>>& focus, const Player& Pl
 		}
 	}
 }
-　
 
 void Main() {
 	Window::SetStyle(WindowStyle::Sizable);
