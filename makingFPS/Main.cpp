@@ -11,7 +11,7 @@ class Eye {
 public:
 	static constexpr double eye_range = std::numbers::pi / 3;
 	static constexpr double eye_length = 75;
-	static constexpr int eye_number = 100;
+	static constexpr int eye_number = 300;
 	std::vector<std::pair<Line, double>> lines;
 	const Vec2& pos_;
 	const double& theta_;
@@ -109,9 +109,18 @@ void drawFPSview(const std::vector<std::optional<Vec2>>& focus, const Player& Pl
 			const auto dist = Geometry2D::Distance(Player.pos, focus[i].value()) *
 				std::cos(Player.eye.lines[i].second);
 			constexpr auto wall_height = 5000;
-			Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
-				window_width / 4 + tmp, window_height / 2 + wall_height / dist)
-				.draw();
+			int a = focus[i].value().y;
+			int b = focus[i].value().x;
+			if (a% 25 == 0 && b%25==0) {
+				Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
+					window_width / 4 + tmp, window_height / 2 + wall_height / dist)
+					.draw(Palette::Orange);
+			}
+			else {
+				Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
+					window_width / 4 + tmp, window_height / 2 + wall_height / dist)
+					.draw();
+			}
 		}
 	}
 }
