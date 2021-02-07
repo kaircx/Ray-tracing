@@ -1,96 +1,130 @@
 ﻿#include <Siv3D.hpp>
+#include <algorithm>
+#include <array>
+#include <cmath>
 #include <numbers>
-
-class Player {
-public:
-	Vec2 pos;
-	double pi = 0;
-	int vel = 2;
-	double turnvel = std::numbers::pi /50 ;
-	Player(Vec2 p) :pos(p.x,p.y){}
-	void update() {
-		if (KeyUp.pressed()) {
-			pos.x += vel * std::cos(pi);
-			pos.y += vel * std::sin(pi);
-		}
-		if (KeyDown.pressed()) {
-			pos.x -= vel * std::cos(pi);
-			pos.y -= vel * std::sin(pi);
-		}
-		if (KeyRight.pressed()) {
-			pi += turnvel;
-		}
-		if (KeyLeft.pressed()) {
-			pi -= turnvel;
-		}
-	}
-	void draw(){
-		Circle(pos.x, pos.y, 30.0).draw(Color(0, 0, 255));
-	}
- };
-
-
-class LimitLine {
-public:
-	Vec2 begin_pos;
-	Vec2 end_pos;
-	LimitLine(Vec2 _p, Vec2 _v) :begin_pos(_p), end_pos(_v) {
-		Line(begin_pos.x, begin_pos.y, end_pos.x, end_pos.y).draw();
-	}
-	LimitLine(Vec2 _p, double _pi, double _length) :begin_pos(_p){
-		end_pos = { _p.x + _length * std::cos(_pi),_p.y +_length * std::sin(_pi) };
-		Line(begin_pos.x, begin_pos.y, end_pos.x, end_pos.y).draw();
-	}
-	double length() {
-		double x = (end_pos - begin_pos).x;
-		double y = (end_pos - begin_pos).y;
-		return std::sqrt(x * x + y * y);
-	}
-	Vec2 v() {
-		double x = (end_pos - begin_pos).x;
-		double y = (end_pos - begin_pos).y;
-		return { x / length(),y / length() };
-	}
-
-};
+#include <optional>
+#include <utility>
+#include <vector>
 
 class Eye {
-public:
-	std::vector<LimitLine> limitlines;
-	double eye_range = std::numbers::pi / 2;
-	int eye_number = 10;
-	int eye_length = 150;
+ public:
+  static constexpr double eye_range = std::numbers::pi / 2;
+  static constexpr int eye_length = 150;
+  static constexpr int eye_number = 100;
+  std::vector<std::pair<Line, double>> lines;
+  const Vec2& pos_;
+  const double& theta_;
 
-	Eye(Vec2 pos, double pi) {
-		for (int i = 0; i < eye_number; i++) {
-			double theta = (pi - eye_range / 2) + i * (eye_range / eye_number);
-			limitlines.push_back(LimitLine(pos, theta, eye_length));
-		}
+  Eye(const Vec2& pos, const double& theta) : pos_(pos), theta_(theta) {
+    update();
+  }
 
-	}
+  void update() {
+    lines.clear();
+    lines.reserve(eye_number);
+    for (std::size_t i = 0; i < eye_number; ++i) {
+      const double phi =
+          (theta_ - eye_range / 2) + i * (eye_range / eye_number);
+      lines.emplace_back(
+          Line(pos_, eye_length * Vec2(std::cos(phi), std::sin(phi)) + pos_), std::abs(phi-theta_)  );
+    }
+  }
 
+  void draw() {
+    for (const auto& line : lines) {
+      line.first.draw();
+    }
+  }
 };
 
-Vec2 intersection(LimitLine a, LimitLine b) {
-	Vec2 v1 = a.v();
-	Vec2 v2 = b.v();
-	double t1 = v1.y / v1.x;
-	double t2 = v2.y / v2.x;
-	double x = (a.begin_pos.y + b.begin_pos.y + t1 * a.begin_pos.x - t2 * b.begin_pos.x) / (t1 - t2);
-	double y = a.begin_pos.y + t1*(x - a.begin_pos.x);
-	return {x,y};
+class Player {
+ public:
+  Vec2 pos;
+  double theta = 0;
+  double vel = 0.5;
+  Eye eye;
+  double turnvel = std::numbers::pi / 50;
+  Player(Vec2 p) : pos(p.x, p.y), eye(pos, theta) {}
+  void update() {
+    if (KeyUp.pressed()) {
+      pos.x += vel * std::cos(theta);
+      pos.y += vel * std::sin(theta);
+    }
+    if (KeyDown.pressed()) {
+      pos.x -= vel * std::cos(theta);
+      pos.y -= vel * std::sin(theta);
+    }
+    if (KeyRight.pressed()) {
+      theta += turnvel;
+    }
+    if (KeyLeft.pressed()) {
+      theta -= turnvel;
+    }
+
+    eye.update();
+  }
+  void draw() {
+    Circle(pos.x, pos.y, 30.0).draw(Color(0, 0, 255));
+    eye.draw();
+  }
 };
 
-
-void Main() {
-	Player Player({0,0});
-	while (System::Update()) {
-		Eye eye(Player.pos, Player.pi);
-		LimitLine a({ 100,100 }, { 300, 400 });
-		//LimitLine b({ 300,400 }, { 300,200 });
-		//LimitLine c({ 300,200 }, { 100, 100 });
-		Player.update();
-		Player.draw();
-		Circle(intersection(eye.limitlines[5],a), 5).draw(Palette::Orange);
-	}
+std::vector<std::optional<Vec2>> makefocus(Player& Player,
+                                           std::vector<Line>& walls) {
+  std::vector<std::optional<Vec2>> focus;
+  for (const auto& l : Player.eye.lines) {
+    const auto& line = l.first;
+    std::vector<Vec2> tmpfocus;
+    for (const auto& wall : walls) {
+      if (wall.intersectsAt(line).has_value()) {
+        tmpfocus.push_back(wall.intersectsAt(line).value().asPoint());
+        Circle(wall.intersectsAt(line).value().asPoint(), 5)
+            .draw(Palette::Orange);
+      }
+    }
+    if (tmpfocus.empty()) {
+      focus.push_back(std::nullopt);
+    } else {
+      auto itr = std::min_element(tmpfocus.cbegin(), tmpfocus.cend(),
+                                  [&Player](const auto& a, const auto& b) {
+                                    return Geometry2D::Distance(a, Player.pos) <
+                                           Geometry2D::Distance(b, Player.pos);
+                                  });
+      focus.push_back(*itr);
+    }
+  }
+    return focus;
 }
+
+void drawFPSview(std::vector < std::optional<Vec2>> focus,Player& Player) {
+  for (int i = 0; i < Player.eye.lines.size(); i++) {
+    const auto window_width = Window::ClientSize().x;
+    const auto window_height = Window::ClientSize().y;
+    const auto tmp = ((window_width / 4) * 3 / Player.eye.lines.size()) * i;
+
+    if (focus[i].has_value()) {
+      const auto dist = Geometry2D::Distance(Player.pos, focus[i].value())*std::cos(Player.eye.lines[i].second);
+      constexpr auto wall_height = 5000;
+      Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
+           window_width / 4 + tmp, window_height / 2 + wall_height / dist)
+          .draw();
+    }
+  }
+}
+
+  void Main() {
+    Player Player({0, 0});
+    std::vector<Line> walls;
+    walls.push_back(Line(10, 10, 100, 100));
+    walls.push_back(Line(100, 100, 50, 500));
+    walls.push_back(Line(50, 500, 10, 10));
+
+    while (System::Update()) {
+      Player.update();
+      Player.draw();
+      auto focus = makefocus(Player,walls);
+      drawFPSview(focus,Player);
+
+    }
+  }
