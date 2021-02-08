@@ -111,7 +111,7 @@ void drawFPSview(const std::vector<std::optional<Vec2>>& focus, const Player& Pl
 			constexpr auto wall_height = 5000;
 			int a = focus[i].value().y;
 			int b = focus[i].value().x;
-			if (a% 25 == 0 && b%25==0) {
+			if (a % 25 == 0 && b % 25 == 0) {
 				Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
 					window_width / 4 + tmp, window_height / 2 + wall_height / dist)
 					.draw(Palette::Orange);
