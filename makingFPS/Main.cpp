@@ -71,15 +71,21 @@ public:
 	}
 };
 
-std::vector<std::optional<Vec2>> makefocus(Player& Player,
-	 std::vector<Line> walls) {
-	std::vector<std::optional<Vec2>> focus;
+std::vector<std::optional<std::pair<Vec2,double>>> makefocus(const Player& Player,
+	 const std::vector<Line>& walls) {
+
+	const Vec2 light = Player.pos;
+
+	std::vector<std::optional<std::pair<Vec2,double>>> focus;
 	for (const auto& l : Player.eye.lines) {
 		const auto& line = l.first;
-		std::vector<Vec2> tmpfocus;
+	  std::vector<std::pair<Vec2,double>> tmpfocus;
 		for (const auto& wall : walls) {
 			if (wall.intersectsAt(line).has_value()) {
-				tmpfocus.push_back(wall.intersectsAt(line).value().asPoint());
+				const auto pos = wall.intersectsAt(line).value().asPoint();
+				tmpfocus.emplace_back(pos,
+					0.05 + 1000.0 * std::abs(wall.vector().normalized().cross(
+						(light - pos).normalized())) / std::pow(Geometry2D::Distance(pos, light), 2));
 				Circle(wall.intersectsAt(line).value().asPoint(), 5)
 					.draw(Palette::Orange);
 			}
@@ -90,8 +96,8 @@ std::vector<std::optional<Vec2>> makefocus(Player& Player,
 		else {
 			auto itr = std::min_element(tmpfocus.cbegin(), tmpfocus.cend(),
 				[&Player](const auto& a, const auto& b) {
-					return Geometry2D::Distance(a, Player.pos) <
-						Geometry2D::Distance(b, Player.pos);
+					return	Geometry2D::Distance(a.first, Player.pos) <
+							Geometry2D::Distance(b.first, Player.pos);
 				});
 			focus.push_back(*itr);
 		}
@@ -99,27 +105,29 @@ std::vector<std::optional<Vec2>> makefocus(Player& Player,
 	return focus;
 }
 
-void drawFPSview(const std::vector<std::optional<Vec2>>& focus, const Player& Player) {
+void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focus, const Player& Player) {
 	for (int i = 0; i < Player.eye.lines.size(); i++) {
 		const double window_width = Window::ClientSize().x;
 		const double window_height = Window::ClientSize().y;
 		const double tmp = ((window_width / 4) * 3 / Player.eye.lines.size()) * i;
 
 		if (focus[i].has_value()) {
-			const auto dist = Geometry2D::Distance(Player.pos, focus[i].value()) *
+			const auto dist = Geometry2D::Distance(Player.pos, focus[i].value().first) *
+
 				std::cos(Player.eye.lines[i].second);
+
 			constexpr auto wall_height = 5000;
-			int a = focus[i].value().y;
-			int b = focus[i].value().x;
+			int a = focus[i].value().first.y;
+			int b = focus[i].value().first.x;
 			if (a % 25 == 0 && b % 25 == 0) {
 				Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
 					window_width / 4 + tmp, window_height / 2 + wall_height / dist)
-					.draw(Palette::Orange);
+					.draw(Palette::Orange, HSV(32, 82, focus[i].value().second));
 			}
 			else {
 				Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
 					window_width / 4 + tmp, window_height / 2 + wall_height / dist)
-					.draw();
+					.draw(HSV(0, 0, focus[i].value().second));
 			}
 		}
 	}
@@ -127,7 +135,6 @@ void drawFPSview(const std::vector<std::optional<Vec2>>& focus, const Player& Pl
 
 std::vector<Line> makemap() {
 	std::vector<Line> walls;
-
 
 	constexpr int width = 8;
 	constexpr int height = 8;
@@ -140,7 +147,6 @@ std::vector<Line> makemap() {
 								{1,0,1,1,0,1,1,1},
 								{1,0,0,0,0,0,0,1},
 								{1,1,1,1,1,1,1,1} };
-
 
 	for (int i = 0; i < width; i++) {
 		Vec2 p;
@@ -157,11 +163,9 @@ std::vector<Line> makemap() {
 	}
 	return walls;
 }
-void drawmap(const std::vector<Line>& walls) {
-	for (const auto& wall : walls) {
-		wall.draw();
-	}
 
+void drawmap(const std::vector<Line>& walls) {
+	for (const auto& wall : walls) wall.draw();
 }
 
 void Main() {
@@ -169,16 +173,11 @@ void Main() {
 	Scene::SetScaleMode(ScaleMode::ResizeFill);
 	Player Player({ 100, 100 });
 	
-
 	while (System::Update()) {
 		Player.update();
 		Player.draw();
-		auto focus = makefocus(Player, makemap());
 		drawmap(makemap());
-		drawFPSview(focus, Player);
-
-
-
+		drawFPSview(makefocus(Player, makemap()), Player);
 
 	}
 }
