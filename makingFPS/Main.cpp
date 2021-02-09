@@ -143,33 +143,17 @@ void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focu
 std::vector<Line> makemap() {
 	std::vector<Line> walls;
 
-	constexpr int height = 24;
-	constexpr int width = 8;
-	int cell_size = 25;
-	int map[height][width] = { {1,1,1,1,1,1,1,1},
-								{1,0,1,0,0,0,0,1},
-								{1,0,1,1,1,1,0,1},
-								{1,0,0,0,0,1,0,1},
-								{1,0,1,1,0,0,0,1},
-								{1,0,1,1,0,1,1,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,0,0,0,0,0,0,1},
-								{1,1,1,1,1,1,1,1}};
+	constexpr int height = 27;
+	constexpr int width = 9;
+	double cell_size = (Window::ClientSize().x/4)/width;
+	std::array<std::array<int, width>, height> map;
+	for (auto& m : map) m.fill(0);
+
+	for (auto m = map.begin(); m != map.end(); m++) {
+	  for (auto n = m->begin(); n != m->end(); n++) {
+		  if (m == map.begin() || m == map.end() - 1 || n == m->begin() || n == m->end() - 1) *n = 1;
+		}
+	}
 
 	for (auto i = 0; i < height; i++) {
 		Vec2 p;
@@ -195,7 +179,7 @@ void Main() {
 	Window::SetStyle(WindowStyle::Sizable);
 	Scene::SetScaleMode(ScaleMode::ResizeFill);
 	const auto map = makemap();
-	Player Player({ 37, 37 }, map);
+	Player Player({ 30, 30 }, map);
 
 	while (System::Update()) {
 		Player.update();
