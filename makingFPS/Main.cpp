@@ -72,7 +72,7 @@ public:
 };
 
 std::vector<std::optional<Vec2>> makefocus(Player& Player,
-	std::vector<Line>& walls) {
+	 std::vector<Line> walls) {
 	std::vector<std::optional<Vec2>> focus;
 	for (const auto& l : Player.eye.lines) {
 		const auto& line = l.first;
@@ -125,10 +125,7 @@ void drawFPSview(const std::vector<std::optional<Vec2>>& focus, const Player& Pl
 	}
 }
 
-void Main() {
-	Window::SetStyle(WindowStyle::Sizable);
-	Scene::SetScaleMode(ScaleMode::ResizeFill);
-	Player Player({ 100, 100 });
+std::vector<Line> makemap() {
 	std::vector<Line> walls;
 
 
@@ -158,11 +155,26 @@ void Main() {
 			}
 		}
 	}
+	return walls;
+}
+void drawmap(const std::vector<Line>& walls) {
+	for (const auto& wall : walls) {
+		wall.draw();
+	}
+
+}
+
+void Main() {
+	Window::SetStyle(WindowStyle::Sizable);
+	Scene::SetScaleMode(ScaleMode::ResizeFill);
+	Player Player({ 100, 100 });
+	
 
 	while (System::Update()) {
 		Player.update();
 		Player.draw();
-		auto focus = makefocus(Player, walls);
+		auto focus = makefocus(Player, makemap());
+		drawmap(makemap());
 		drawFPSview(focus, Player);
 
 
