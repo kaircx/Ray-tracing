@@ -46,8 +46,13 @@ public:
 	double vel = 0.5;
 	Eye eye;
 	double turnvel = std::numbers::pi / 100;
-	Player(Vec2 p) : pos(p.x, p.y), eye(pos, theta) {}
+  std::vector<Line> map_;
+
+	Player(Vec2 p, const std::vector<Line>& map) : pos(p.x, p.y), eye(pos, theta) ,map_(map) {}
+
 	void update() {
+
+		const auto tmp_pos = pos;
 		if (KeyUp.pressed()) {
 			pos.x += vel * std::cos(theta);
 			pos.y += vel * std::sin(theta);
@@ -56,6 +61,8 @@ public:
 			pos.x -= vel * std::cos(theta);
 			pos.y -= vel * std::sin(theta);
 		}
+		if (std::any_of(map_.cbegin(), map_.cend(), [this](const auto& a){ return a.intersects(pos); })) pos = tmp_pos;
+
 		if (KeyRight.pressed()) {
 			theta += turnvel;
 		}
@@ -171,13 +178,14 @@ void drawmap(const std::vector<Line>& walls) {
 void Main() {
 	Window::SetStyle(WindowStyle::Sizable);
 	Scene::SetScaleMode(ScaleMode::ResizeFill);
-	Player Player({ 100, 100 });
-	
+	const auto map = makemap();
+	Player Player({ 37, 37 }, map);
+
 	while (System::Update()) {
 		Player.update();
 		Player.draw();
-		drawmap(makemap());
-		drawFPSview(makefocus(Player, makemap()), Player);
+		drawmap(map);
+		drawFPSview(makefocus(Player, map), Player);
 
 	}
 }
