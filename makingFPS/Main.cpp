@@ -143,22 +143,38 @@ void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focu
 std::vector<Line> makemap() {
 	std::vector<Line> walls;
 
+	constexpr int height = 24;
 	constexpr int width = 8;
-	constexpr int height = 8;
 	int cell_size = 25;
-	int map[width][height] = { {1,1,1,1,1,1,1,1},
+	int map[height][width] = { {1,1,1,1,1,1,1,1},
 								{1,0,1,0,0,0,0,1},
 								{1,0,1,1,1,1,0,1},
 								{1,0,0,0,0,1,0,1},
 								{1,0,1,1,0,0,0,1},
 								{1,0,1,1,0,1,1,1},
 								{1,0,0,0,0,0,0,1},
-								{1,1,1,1,1,1,1,1} };
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,0,0,0,0,0,0,1},
+								{1,1,1,1,1,1,1,1}};
 
-	for (int i = 0; i < width; i++) {
+	for (auto i = 0; i < height; i++) {
 		Vec2 p;
 		p.y = i * cell_size;
-		for (int j = 0; j < height; j++) {
+		for (auto j = 0; j < width; j++) {
 			p.x = j * cell_size;
 			if (map[i][j] == 1) {
 				walls.emplace_back(p.x, p.y, p.x + cell_size, p.y);
