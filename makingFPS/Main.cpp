@@ -12,7 +12,7 @@ class Eye {
 public:
 	static constexpr double eye_range = std::numbers::pi / 4;
 	static constexpr double eye_length = 80;
-	static constexpr int eye_number = 100;
+	static constexpr int eye_number = 200;
 	std::vector<std::pair<Line, double>> lines;
 	const Vec2& pos_;
 	const double& theta_;
@@ -113,7 +113,7 @@ std::vector<std::optional<std::pair<Vec2,double>>> makefocus(const Player& Playe
 	return focus;
 }
 
-void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focus, const Player& Player) {
+void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focus, const Player& Player,double cellsize) {
 	for (int i = 0; i < Player.eye.lines.size(); i++) {
 		const double window_width = Window::ClientSize().x;
 		const double window_height = Window::ClientSize().y;
@@ -127,29 +127,29 @@ void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focu
 			constexpr auto wall_height = 5000;
 			int a = focus[i].value().first.y;
 			int b = focus[i].value().first.x;
-			if (a % 25 == 0 && b % 25 == 0) {
+			if (a % static_cast<int>(cellsize) == 0 && b % static_cast<int>(cellsize) == 0) {
 				Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
 					window_width / 4 + tmp, window_height / 2 + wall_height / dist)
-					.draw(Palette::Orange, HSV(32, 82, focus[i].value().second));
+					.draw(4,Palette::Orange, HSV(32, 82, focus[i].value().second));
 			}
 			else {
 				Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
 					window_width / 4 + tmp, window_height / 2 + wall_height / dist)
-					.draw(HSV(0, 0, focus[i].value().second));
+					.draw(4,HSV(0, 0, focus[i].value().second));
 			}
 		}
 	}
 }
 
-std::vector<Line> makemap() {
+std::vector<Line> makemap(int height, int width, double cell_size) {
 	std::vector<Line> walls;
 
-	constexpr int height = 39;
-	constexpr int width = 13;
-	double cell_size = (Window::ClientSize().x/4)/width;
-	std::array<std::array<int, width>, height> map;
-	for (auto& m : map) m.fill(1);
-
+	std::vector<std::vector<int>> map;
+	map.resize(height);
+	for (auto& m : map) {
+		m.resize(width);
+		std::fill(m.begin(), m.end(), 1);
+	}
 
 	enum class direction {
 		up, 
@@ -166,7 +166,7 @@ std::vector<Line> makemap() {
 	for (auto dir = static_cast<int>(direction::up); dir < static_cast<int>(direction::size); ++dir) end_flags[static_cast<direction>(dir)] = false; 
 
 	int a = 0;
-	while(a<1000) {
+	while(a<10000) {
 		a++;
 		const auto dir = static_cast<direction>(Random(0, 3));
 
@@ -257,14 +257,19 @@ void drawmap(const std::vector<Line>& walls) {
 void Main() {
 	Window::SetStyle(WindowStyle::Sizable);
 	Scene::SetScaleMode(ScaleMode::ResizeFill);
-	const auto map = makemap();
+
+  constexpr int height = 39;
+  constexpr int width = 13;
+  const double cell_size = (Window::ClientSize().x / 4) / width;
+
+	const auto map = makemap(height, width, cell_size);
 	Player Player({ 20, 20 }, map);
 
 	while (System::Update()) {
 		Player.update();
 		Player.draw();
 		drawmap(map);
-		drawFPSview(makefocus(Player, map), Player);
+		drawFPSview(makefocus(Player, map), Player,cell_size);
 
 	}
 }
