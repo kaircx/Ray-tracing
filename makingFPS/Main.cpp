@@ -44,13 +44,13 @@ class Player {
 public:
 	Vec2 pos;
 	double theta = (std::numbers::pi / 8) * 4;
-	double vel = 1;//1
+	double vel = 0.5;//1
 	Eye eye;
 	double turnvel = std::numbers::pi / 80;//80
 	std::vector<Line> map_;
 	const Audio audio;
-	Player(Vec2 p, const std::vector<Line>& map) : audio(U"./nc92986.wav", Arg::loop = true),pos(p.x, p.y), eye(pos, theta), map_(map) {
-	
+	Player(Vec2 p, const std::vector<Line>& map) : audio(U"./nc92986.wav", Arg::loop = true), pos(p.x, p.y), eye(pos, theta), map_(map) {
+
 	}
 
 	void update() {
@@ -67,17 +67,18 @@ public:
 			pos.y -= vel * std::sin(theta);
 		}
 		else audio.stop();
-		
+
 		if (std::any_of(map_.cbegin(), map_.cend(), [this](const auto& a) { return a.intersects(pos); })) { pos = tmp_pos; }
 
 		else if (KeyRight.pressed()) {
 			//audio.play();
 			theta += turnvel;
-		}else if (KeyLeft.pressed()) {
+		}
+		else if (KeyLeft.pressed()) {
 			//audio.play();
 			theta -= turnvel;
 		}
-		
+
 
 		eye.update();
 	}
@@ -279,7 +280,7 @@ void drawmap(const std::vector<Line>& walls) {
 void Main() {
 	Window::SetStyle(WindowStyle::Sizable);
 	Scene::SetScaleMode(ScaleMode::ResizeFill);
-	constexpr int height = 13;//39
+	constexpr int height = 29;//39
 	constexpr int width = 13;//13
 	const double cell_size = (Window::ClientSize().x / 4) / width;
 	const Audio audio(U"./nc234276.wav", Arg::loop = true);
@@ -287,7 +288,7 @@ void Main() {
 	const auto map = makemap(height, width, cell_size);
 	Player Player({ 20, 20 }, map);
 	audio.play();
-  const Font font(100, Typeface::Bold);
+	const Font font(100, Typeface::Bold);
 	while (System::Update()) {
 		const auto x = Window::ClientSize().x;
 		const auto y = Window::ClientSize().y;
@@ -297,7 +298,7 @@ void Main() {
 		Player.draw();
 		drawmap(map);
 		drawFPSview(makefocus(Player, map), Player, cell_size, height, width);
-	
+
 		// スタート時の処理
 		if (std::hypot(cell_size - Player.pos.x, cell_size - Player.pos.y) < cell_size) {
 			font(U"Start!\nmove: arrow key").draw(Window::ClientSize().x / 4, Window::ClientSize().y / 4, Palette::Black);
