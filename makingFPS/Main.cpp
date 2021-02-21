@@ -147,13 +147,86 @@ std::vector<Line> makemap() {
 	constexpr int width = 9;
 	double cell_size = (Window::ClientSize().x/4)/width;
 	std::array<std::array<int, width>, height> map;
-	for (auto& m : map) m.fill(0);
+	for (auto& m : map) m.fill(1);
+
+
+	enum class direction {
+		up, 
+		down,
+		right,
+		left
+	};
+
+	int digg_pos_x = 1;
+	int digg_pos_y = 1;
+	map[digg_pos_y][digg_pos_x] = 0;
+	bool end_flag = false;
+	while(digg_pos_x==10&&digg_pos_y==10) {
+		
+		const auto dir = static_cast<direction>(Random(0, 3));
+
+		switch (dir) {
+		case direction::up:
+			if (digg_pos_y - 2 > 0) {
+				digg_pos_y -= 2;
+				if (map[digg_pos_y][digg_pos_x] == 1) {
+					map[digg_pos_y][digg_pos_x] = 0;
+					map[digg_pos_y + 1][digg_pos_x] = 0;
+				}
+				else digg_pos_y += 2;
+			}
+			else end_flag = true;
+			break;
+		case direction::down:
+			if (digg_pos_y + 2 < height) {
+				digg_pos_y += 2;
+				if (map[digg_pos_y][digg_pos_x] == 1) {
+					map[digg_pos_y][digg_pos_x] = 0;
+					map[digg_pos_y - 1][digg_pos_x] = 0;
+				}
+				else digg_pos_y -= 2;
+			}
+			else end_flag = true;
+			break;
+		case direction::right:
+			if (digg_pos_x + 2 < width) {
+				digg_pos_x += 2;
+				if (map[digg_pos_y][digg_pos_x] == 1) {
+					map[digg_pos_y][digg_pos_x] = 0;
+					map[digg_pos_y][digg_pos_x - 1] = 0;
+				}
+				else digg_pos_x -= 2;
+			}
+			else end_flag = true;
+			break;
+		case direction::left:
+			if (digg_pos_x - 2 > 0) {
+				digg_pos_x -= 2;
+				if (map[digg_pos_y][digg_pos_x] == 1) {
+					map[digg_pos_y][digg_pos_x] = 0;
+					map[digg_pos_y][digg_pos_x + 1] = 0;
+				}
+				else digg_pos_x += 2;
+			}
+			else end_flag = true;
+			break;
+		}
+		int Random_x = Random(0, width - 1);
+		int Random_y = Random(0, height - 1);
+
+		if (map[Random_y][Random_x] == 0 && end_flag) {
+			digg_pos_x = Random_x;
+			digg_pos_y = Random_y;
+		}
+	}
 
 	for (auto m = map.begin(); m != map.end(); m++) {
 	  for (auto n = m->begin(); n != m->end(); n++) {
 		  if (m == map.begin() || m == map.end() - 1 || n == m->begin() || n == m->end() - 1) *n = 1;
 		}
 	}
+
+
 
 	for (auto i = 0; i < height; i++) {
 		Vec2 p;
