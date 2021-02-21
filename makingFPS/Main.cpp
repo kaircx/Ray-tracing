@@ -44,32 +44,39 @@ class Player {
 public:
 	Vec2 pos;
 	double theta = (std::numbers::pi / 8) * 4;
-	double vel = 1;//1
+	double vel = 1.5;//1
 	Eye eye;
-	double turnvel = std::numbers::pi / 80;//80
+	double turnvel = std::numbers::pi / 60;//80
 	std::vector<Line> map_;
-
-	Player(Vec2 p, const std::vector<Line>& map) : pos(p.x, p.y), eye(pos, theta), map_(map) {}
+	const Audio audio;
+	Player(Vec2 p, const std::vector<Line>& map) : audio(U"./nc92986.wav", Arg::loop = true),pos(p.x, p.y), eye(pos, theta), map_(map) {
+	
+	}
 
 	void update() {
 
 		const auto tmp_pos = pos;
 		if (KeyUp.pressed()) {
+			audio.play();
 			pos.x += vel * std::cos(theta);
 			pos.y += vel * std::sin(theta);
 		}
-		if (KeyDown.pressed()) {
+		else if (KeyDown.pressed()) {
+			audio.play();
 			pos.x -= vel * std::cos(theta);
 			pos.y -= vel * std::sin(theta);
 		}
-		if (std::any_of(map_.cbegin(), map_.cend(), [this](const auto& a) { return a.intersects(pos); })) pos = tmp_pos;
+		else if (std::any_of(map_.cbegin(), map_.cend(), [this](const auto& a) { return a.intersects(pos); })) { pos = tmp_pos; }
 
-		if (KeyRight.pressed()) {
+		else if (KeyRight.pressed()) {
+			//audio.play();
 			theta += turnvel;
-		}
-		if (KeyLeft.pressed()) {
+		}else if (KeyLeft.pressed()) {
+			//audio.play();
 			theta -= turnvel;
 		}
+		else audio.stop();
+		
 
 		eye.update();
 	}
@@ -149,7 +156,10 @@ void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focu
 			}
 		}
 	}
-	if (std::hypot(cellsize * (width - 2) - Player.pos.x, cellsize * (height - 2) - Player.pos.y) < cellsize) {}
+	if (std::hypot(cellsize * (width - 2) - Player.pos.x, cellsize * (height - 2) - Player.pos.y) < cellsize) {
+		const Font font(36, Typeface::Bold);
+		font(U"Goal!").draw(Window::ClientSize().x / 4, Window::ClientSize().y / 2);
+	}
 }
 
 std::vector<Line> makemap(int height, int width, double cell_size) {
@@ -276,6 +286,7 @@ void Main() {
 	constexpr int width = 13;
 	const double cell_size = (Window::ClientSize().x / 4) / width;
 	const Audio audio(U"./nc234276.wav", Arg::loop = true);
+
 	const auto map = makemap(height, width, cell_size);
 	Player Player({ 20, 20 }, map);
 	audio.play();
