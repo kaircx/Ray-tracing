@@ -83,7 +83,7 @@ public:
 	}
 	void draw() {
 		Circle(pos.x, pos.y, 5.0).draw(Color(0, 0, 255));
-		eye.draw();
+		//eye.draw();
 	}
 };
 
@@ -283,7 +283,7 @@ void Main() {
 	constexpr int width = 13;
 	const double cell_size = (Window::ClientSize().x / 4) / width;
 	const Audio audio(U"./nc234276.wav", Arg::loop = true);
-	const Audio goalaudio(U"./nc236875.wav");
+	const Audio goalaudio(U"./nc236875.wav" ,Arg::loop = true);
 	const auto map = makemap(height, width, cell_size);
 	Player Player({ 20, 20 }, map);
 	audio.play();
