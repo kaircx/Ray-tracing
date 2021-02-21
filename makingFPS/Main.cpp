@@ -10,7 +10,7 @@
 
 class Eye {
 public:
-	static constexpr double eye_range = std::numbers::pi / 4;
+	static constexpr double eye_range = std::numbers::pi / 2.2;
 	static constexpr double eye_length = 80;
 	static constexpr int eye_number = 200;
 	std::vector<std::pair<Line, double>> lines;
@@ -43,10 +43,10 @@ public:
 class Player {
 public:
 	Vec2 pos;
-	double theta = 0;
-	double vel = 1;
+	double theta = (std::numbers::pi/8)*4;
+	double vel = 1;//1
 	Eye eye;
-	double turnvel = std::numbers::pi / 80;
+	double turnvel = std::numbers::pi /80 ;//80
   std::vector<Line> map_;
 
 	Player(Vec2 p, const std::vector<Line>& map) : pos(p.x, p.y), eye(pos, theta) ,map_(map) {}
@@ -113,7 +113,7 @@ std::vector<std::optional<std::pair<Vec2,double>>> makefocus(const Player& Playe
 	return focus;
 }
 
-void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focus, const Player& Player,double cellsize) {
+void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focus, const Player& Player,double cellsize,int height,int width) {
 	for (int i = 0; i < Player.eye.lines.size(); i++) {
 		const double window_width = Window::ClientSize().x;
 		const double window_height = Window::ClientSize().y;
@@ -127,15 +127,25 @@ void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focu
 			constexpr auto wall_height = 5000;
 			int a = focus[i].value().first.y;
 			int b = focus[i].value().first.x;
-			if (a % static_cast<int>(cellsize) == 0 && b % static_cast<int>(cellsize) == 0) {
+			if (a<=cellsize*2&&b<=cellsize*2) {
 				Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
 					window_width / 4 + tmp, window_height / 2 + wall_height / dist)
-					.draw(4,Palette::Orange, HSV(32, 82, focus[i].value().second));
+					.draw(8, HSV(241, 1, focus[i].value().second));
+			}
+			else if (a>=cellsize*(height-2)&&b>=cellsize*(width-2)) {
+				Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
+					window_width / 4 + tmp, window_height / 2 + wall_height / dist)
+					.draw(8, Palette::Red, HSV(0, 1, focus[i].value().second));
+			}
+			else if (a % static_cast<int>(cellsize) == 0 && b % static_cast<int>(cellsize) == 0) {
+				Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
+					window_width / 4 + tmp, window_height / 2 + wall_height / dist)
+					.draw(8,Palette::Orange, HSV(32, 82, focus[i].value().second));
 			}
 			else {
 				Line(window_width / 4 + tmp, window_height / 2 - wall_height / dist,
 					window_width / 4 + tmp, window_height / 2 + wall_height / dist)
-					.draw(4,HSV(0, 0, focus[i].value().second));
+					.draw(8,HSV(0, 0, focus[i].value().second));
 			}
 		}
 	}
@@ -257,7 +267,7 @@ void drawmap(const std::vector<Line>& walls) {
 void Main() {
 	Window::SetStyle(WindowStyle::Sizable);
 	Scene::SetScaleMode(ScaleMode::ResizeFill);
-
+ 
   constexpr int height = 39;
   constexpr int width = 13;
   const double cell_size = (Window::ClientSize().x / 4) / width;
@@ -266,10 +276,15 @@ void Main() {
 	Player Player({ 20, 20 }, map);
 
 	while (System::Update()) {
+		const auto x = Window::ClientSize().x;
+		const auto y = Window::ClientSize().y;
+		Rect(x / 4,0, x, y).draw(Arg::top = Palette::Lightblue, Arg::bottom = Palette::Black);
+		Rect(x/4, y / 2, x, y).draw(Arg::top = Palette::Black, Arg::bottom = Palette::Green);
+
 		Player.update();
 		Player.draw();
 		drawmap(map);
-		drawFPSview(makefocus(Player, map), Player,cell_size);
+		drawFPSview(makefocus(Player, map), Player,cell_size,height,width);
 
 	}
 }
