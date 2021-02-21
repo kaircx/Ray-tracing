@@ -279,11 +279,11 @@ void drawmap(const std::vector<Line>& walls) {
 void Main() {
 	Window::SetStyle(WindowStyle::Sizable);
 	Scene::SetScaleMode(ScaleMode::ResizeFill);
-	constexpr int height = 39;
-	constexpr int width = 13;
+	constexpr int height = 13;//39
+	constexpr int width = 13;//13
 	const double cell_size = (Window::ClientSize().x / 4) / width;
 	const Audio audio(U"./nc234276.wav", Arg::loop = true);
-	const Audio goalaudio(U"./nc236875.wav" ,Arg::loop = true);
+	const Audio goalaudio(U"./nc236875.wav", Arg::loop = true);
 	const auto map = makemap(height, width, cell_size);
 	Player Player({ 20, 20 }, map);
 	audio.play();
@@ -293,7 +293,6 @@ void Main() {
 		const auto y = Window::ClientSize().y;
 		Rect(x / 4, 0, x, y).draw(Arg::top = Palette::Lightblue, Arg::bottom = Palette::Black);
 		Rect(x / 4, y / 2, x, y).draw(Arg::top = Palette::Black, Arg::bottom = Palette::Green);
-
 		Player.update();
 		Player.draw();
 		drawmap(map);
@@ -306,6 +305,7 @@ void Main() {
 
 		// ゴール時の処理
 		if (std::hypot(cell_size * (width - 2) - Player.pos.x, cell_size * (height - 2) - Player.pos.y) < cell_size) {
+			audio.pause();
 			goalaudio.play();
 			font(U"Goal!").draw(Window::ClientSize().x / 4, Window::ClientSize().y / 4, Palette::Black);
 		}
