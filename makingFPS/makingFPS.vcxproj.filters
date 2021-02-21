@@ -366,6 +366,12 @@
     <Media Include="App\example\test.mp3">
       <Filter>Resource Files\example</Filter>
     </Media>
+    <Media Include="..\..\..\..\Downloads\nc234276.wav">
+      <Filter>Source Files</Filter>
+    </Media>
+    <Media Include="..\..\..\..\Downloads\nc92986.wav">
+      <Filter>Source Files</Filter>
+    </Media>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="App\example\test.xml">

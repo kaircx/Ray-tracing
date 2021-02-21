@@ -192,6 +192,8 @@
     <Font Include="App\example\font\Pecita\Pecita.otf" />
   </ItemGroup>
   <ItemGroup>
+    <Media Include="..\..\..\..\Downloads\nc234276.wav" />
+    <Media Include="..\..\..\..\Downloads\nc92986.wav" />
     <Media Include="App\example\shot.mp3" />
     <Media Include="App\example\test.mp3" />
   </ItemGroup>
