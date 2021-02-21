@@ -367,10 +367,10 @@
       <Filter>Resource Files\example</Filter>
     </Media>
     <Media Include="..\..\..\..\Downloads\nc234276.wav">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files</Filter>
     </Media>
     <Media Include="..\..\..\..\Downloads\nc92986.wav">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files</Filter>
     </Media>
   </ItemGroup>
   <ItemGroup>
