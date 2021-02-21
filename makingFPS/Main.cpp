@@ -4,14 +4,15 @@
 #include <cmath>
 #include <numbers>
 #include <optional>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 class Eye {
 public:
-	static constexpr double eye_range = std::numbers::pi / 3;
-	static constexpr double eye_length = 75;
-	static constexpr int eye_number = 300;
+	static constexpr double eye_range = std::numbers::pi / 4;
+	static constexpr double eye_length = 80;
+	static constexpr int eye_number = 100;
 	std::vector<std::pair<Line, double>> lines;
 	const Vec2& pos_;
 	const double& theta_;
@@ -43,9 +44,9 @@ class Player {
 public:
 	Vec2 pos;
 	double theta = 0;
-	double vel = 0.5;
+	double vel = 1;
 	Eye eye;
-	double turnvel = std::numbers::pi / 100;
+	double turnvel = std::numbers::pi / 80;
   std::vector<Line> map_;
 
 	Player(Vec2 p, const std::vector<Line>& map) : pos(p.x, p.y), eye(pos, theta) ,map_(map) {}
@@ -143,8 +144,8 @@ void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focu
 std::vector<Line> makemap() {
 	std::vector<Line> walls;
 
-	constexpr int height = 27;
-	constexpr int width = 9;
+	constexpr int height = 39;
+	constexpr int width = 13;
 	double cell_size = (Window::ClientSize().x/4)/width;
 	std::array<std::array<int, width>, height> map;
 	for (auto& m : map) m.fill(1);
@@ -154,69 +155,74 @@ std::vector<Line> makemap() {
 		up, 
 		down,
 		right,
-		left
+		left,
+		size
 	};
 
 	int digg_pos_x = 1;
 	int digg_pos_y = 1;
 	map[digg_pos_y][digg_pos_x] = 0;
-	bool end_flag = false;
-	while(digg_pos_x==10&&digg_pos_y==10) {
-		
+	std::unordered_map<direction, bool> end_flags;
+	for (auto dir = static_cast<int>(direction::up); dir < static_cast<int>(direction::size); ++dir) end_flags[static_cast<direction>(dir)] = false; 
+
+	int a = 0;
+	while(a<1000) {
+		a++;
 		const auto dir = static_cast<direction>(Random(0, 3));
 
 		switch (dir) {
 		case direction::up:
-			if (digg_pos_y - 2 > 0) {
-				digg_pos_y -= 2;
-				if (map[digg_pos_y][digg_pos_x] == 1) {
-					map[digg_pos_y][digg_pos_x] = 0;
-					map[digg_pos_y + 1][digg_pos_x] = 0;
-				}
-				else digg_pos_y += 2;
+		  digg_pos_y -= 2;
+			if (digg_pos_y > 0 && map[digg_pos_y][digg_pos_x] == 1) {
+			  map[digg_pos_y][digg_pos_x] = 0;
+				map[digg_pos_y + 1][digg_pos_x] = 0;
+				for (auto& e : end_flags) e.second = false;
+			} else {
+				end_flags[direction::up] = true;
+				digg_pos_y += 2;
 			}
-			else end_flag = true;
 			break;
 		case direction::down:
-			if (digg_pos_y + 2 < height) {
-				digg_pos_y += 2;
-				if (map[digg_pos_y][digg_pos_x] == 1) {
-					map[digg_pos_y][digg_pos_x] = 0;
-					map[digg_pos_y - 1][digg_pos_x] = 0;
-				}
-				else digg_pos_y -= 2;
+			digg_pos_y += 2;
+			if (digg_pos_y < height&& map[digg_pos_y][digg_pos_x] == 1) {
+				map[digg_pos_y][digg_pos_x] = 0;
+				map[digg_pos_y - 1][digg_pos_x] = 0;
+			  for (auto& e : end_flags) e.second = false;
+			} else {
+				end_flags[direction::down] = true;
+				digg_pos_y -= 2;
 			}
-			else end_flag = true;
 			break;
 		case direction::right:
-			if (digg_pos_x + 2 < width) {
-				digg_pos_x += 2;
-				if (map[digg_pos_y][digg_pos_x] == 1) {
-					map[digg_pos_y][digg_pos_x] = 0;
-					map[digg_pos_y][digg_pos_x - 1] = 0;
-				}
-				else digg_pos_x -= 2;
+			digg_pos_x += 2;
+			if (digg_pos_x < width&& map[digg_pos_y][digg_pos_x] == 1) {
+				map[digg_pos_y][digg_pos_x] = 0;
+				map[digg_pos_y][digg_pos_x - 1] = 0;
+				for (auto& e : end_flags) e.second = false;
+			} else {
+				end_flags[direction::right] = true;
+				digg_pos_x -= 2;
 			}
-			else end_flag = true;
 			break;
 		case direction::left:
-			if (digg_pos_x - 2 > 0) {
-				digg_pos_x -= 2;
-				if (map[digg_pos_y][digg_pos_x] == 1) {
-					map[digg_pos_y][digg_pos_x] = 0;
-					map[digg_pos_y][digg_pos_x + 1] = 0;
-				}
-				else digg_pos_x += 2;
+			digg_pos_x -= 2;
+			if (digg_pos_x  > 0&& map[digg_pos_y][digg_pos_x] == 1) {
+				map[digg_pos_y][digg_pos_x] = 0;
+				map[digg_pos_y][digg_pos_x + 1] = 0;
+				for (auto& e : end_flags) e.second = false;
+			} else {
+			  end_flags[direction::left] = true;
+				digg_pos_x += 2;
 			}
-			else end_flag = true;
 			break;
 		}
-		int Random_x = Random(0, width - 1);
-		int Random_y = Random(0, height - 1);
-
-		if (map[Random_y][Random_x] == 0 && end_flag) {
-			digg_pos_x = Random_x;
-			digg_pos_y = Random_y;
+		int Random_x = std::floor(Random(2, width)/2)-1;
+		int Random_y = std::floor(Random(2, height)/2)-1;
+		
+		if (std::all_of(end_flags.cbegin(), end_flags.cend(), [](const auto& e){ return e.second; })&& map[Random_y * 2 + 1][Random_x * 2 + 1]==0) {
+			digg_pos_x = Random_x*2+1;
+			digg_pos_y = Random_y*2+1;
+			for (auto& e : end_flags) e.second = false;
 		}
 	}
 
@@ -252,7 +258,7 @@ void Main() {
 	Window::SetStyle(WindowStyle::Sizable);
 	Scene::SetScaleMode(ScaleMode::ResizeFill);
 	const auto map = makemap();
-	Player Player({ 30, 30 }, map);
+	Player Player({ 20, 20 }, map);
 
 	while (System::Update()) {
 		Player.update();
