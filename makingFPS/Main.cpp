@@ -275,7 +275,7 @@ void Main() {
 	constexpr int height = 39;
 	constexpr int width = 13;
 	const double cell_size = (Window::ClientSize().x / 4) / width;
-	const Audio audio(U"Resource Files/nc234276.wav", Arg::loop = true);
+	const Audio audio(U"./nc234276.wav", Arg::loop = true);
 	const auto map = makemap(height, width, cell_size);
 	Player Player({ 20, 20 }, map);
 	audio.play();
