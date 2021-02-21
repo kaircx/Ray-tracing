@@ -44,9 +44,9 @@ class Player {
 public:
 	Vec2 pos;
 	double theta = (std::numbers::pi / 8) * 4;
-	double vel = 1.5;//1
+	double vel = 1;//1
 	Eye eye;
-	double turnvel = std::numbers::pi / 60;//80
+	double turnvel = std::numbers::pi / 80;//80
 	std::vector<Line> map_;
 	const Audio audio;
 	Player(Vec2 p, const std::vector<Line>& map) : audio(U"./nc92986.wav", Arg::loop = true),pos(p.x, p.y), eye(pos, theta), map_(map) {
