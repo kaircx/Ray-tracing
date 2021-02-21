@@ -11,7 +11,7 @@
 class Eye {
 public:
 	static constexpr double eye_range = std::numbers::pi / 2.2;
-	static constexpr double eye_length = 80;
+	static constexpr double eye_length = 150;
 	static constexpr int eye_number = 200;
 	std::vector<std::pair<Line, double>> lines;
 	const Vec2& pos_;
@@ -157,10 +157,6 @@ void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focu
 			}
 		}
 	}
-	if (std::hypot(cellsize * (width - 2) - Player.pos.x, cellsize * (height - 2) - Player.pos.y) < cellsize) {
-		const Font font(100, Typeface::Bold);
-		font(U"Goal!").draw(Window::ClientSize().x / 4, Window::ClientSize().y / 2);
-	}
 }
 
 std::vector<Line> makemap(int height, int width, double cell_size) {
@@ -287,10 +283,11 @@ void Main() {
 	constexpr int width = 13;
 	const double cell_size = (Window::ClientSize().x / 4) / width;
 	const Audio audio(U"./nc234276.wav", Arg::loop = true);
-
+	const Audio goalaudio(U"./nc236875.wav");
 	const auto map = makemap(height, width, cell_size);
 	Player Player({ 20, 20 }, map);
 	audio.play();
+  const Font font(100, Typeface::Bold);
 	while (System::Update()) {
 		const auto x = Window::ClientSize().x;
 		const auto y = Window::ClientSize().y;
@@ -301,5 +298,16 @@ void Main() {
 		Player.draw();
 		drawmap(map);
 		drawFPSview(makefocus(Player, map), Player, cell_size, height, width);
+	
+		// スタート時の処理
+		if (std::hypot(cell_size - Player.pos.x, cell_size - Player.pos.y) < cell_size) {
+			font(U"Start!\nmove: arrow key").draw(Window::ClientSize().x / 4, Window::ClientSize().y / 4, Palette::Black);
+		}
+
+		// ゴール時の処理
+		if (std::hypot(cell_size * (width - 2) - Player.pos.x, cell_size * (height - 2) - Player.pos.y) < cell_size) {
+			goalaudio.play();
+			font(U"Goal!").draw(Window::ClientSize().x / 4, Window::ClientSize().y / 4, Palette::Black);
+		}
 	}
 }

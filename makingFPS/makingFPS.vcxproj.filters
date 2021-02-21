@@ -372,6 +372,9 @@
     <Media Include="..\..\..\..\Downloads\nc92986.wav">
       <Filter>Resource Files</Filter>
     </Media>
+    <Media Include="..\..\..\..\Downloads\nc236875.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="App\example\test.xml">
