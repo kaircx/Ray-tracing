@@ -66,7 +66,9 @@ public:
 			pos.x -= vel * std::cos(theta);
 			pos.y -= vel * std::sin(theta);
 		}
-		else if (std::any_of(map_.cbegin(), map_.cend(), [this](const auto& a) { return a.intersects(pos); })) { pos = tmp_pos; }
+		else audio.stop();
+		
+		if (std::any_of(map_.cbegin(), map_.cend(), [this](const auto& a) { return a.intersects(pos); })) { pos = tmp_pos; }
 
 		else if (KeyRight.pressed()) {
 			//audio.play();
@@ -75,7 +77,6 @@ public:
 			//audio.play();
 			theta -= turnvel;
 		}
-		else audio.stop();
 		
 
 		eye.update();
@@ -157,7 +158,7 @@ void drawFPSview(const std::vector<std::optional<std::pair<Vec2, double>>>& focu
 		}
 	}
 	if (std::hypot(cellsize * (width - 2) - Player.pos.x, cellsize * (height - 2) - Player.pos.y) < cellsize) {
-		const Font font(36, Typeface::Bold);
+		const Font font(100, Typeface::Bold);
 		font(U"Goal!").draw(Window::ClientSize().x / 4, Window::ClientSize().y / 2);
 	}
 }
